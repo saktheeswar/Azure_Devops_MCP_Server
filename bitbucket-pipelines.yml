@@ -1,0 +1,25 @@
+image: node:18
+
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Build and Deploy
+          script:
+            - echo "Pulling code from master branch..."
+            - echo "Installing dependencies..."
+            - npm install
+            - echo "Building the project..."
+            - npm run build
+            - echo "Running linter..."
+            - npm run lint
+            - echo "Running tests..."
+            - npm run test:e2e
+            - echo "Starting the application..."
+            - npm run start:prod
+          artifacts:
+            - dist/**
+
+definitions:
+  caches:
+    npm: ~/.npm
