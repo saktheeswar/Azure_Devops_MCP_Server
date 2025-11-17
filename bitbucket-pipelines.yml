@@ -4,8 +4,11 @@ pipelines:
   branches:
     master:
       - step:
-          name: Build and Deploy
-          script:
+        runs-on:
+          - self.hosted
+          - linux
+        name: Build and Deploy
+        script:
             - echo "Pulling code from master branch..."
             - echo "Installing dependencies..."
             - npm install
@@ -17,7 +20,7 @@ pipelines:
             - npm run test:e2e
             - echo "Starting the application..."
             - npm run start:prod
-          artifacts:
+        artifacts:
             - dist/**
 
 definitions:
