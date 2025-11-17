@@ -5,7 +5,10 @@ pipelines:
           name: Build and Deploy on Private Server
           runs-on:
             - self.hosted
-            - linux # Tags for your runner
+            - linux 
+            - docker
+          images:
+            - node:18  
           script:
             - echo "Installing dependencies..."
             - npm install
