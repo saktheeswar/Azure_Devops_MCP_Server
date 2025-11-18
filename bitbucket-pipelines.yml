@@ -6,7 +6,6 @@ pipelines:
           runs-on:
             - self.hosted
             - linux 
-            - docker
           images:
             - node:18  
           script:
