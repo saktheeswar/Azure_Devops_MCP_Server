@@ -1,13 +1,13 @@
 pipelines:
-  custom:
+  master:
     deploy:
       - step:
           name: Build and Deploy on Private Server
           runs-on:
             - self.hosted
-            - linux 
+            - linux
           images:
-            - node:18  
+            - node:18.19.1
           script:
             - echo "Installing dependencies..."
             - npm install
