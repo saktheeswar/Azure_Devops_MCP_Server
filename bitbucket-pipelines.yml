@@ -1,24 +1,17 @@
 pipelines:
-  master:
-    deploy:
+  branches:
+    master:
       - step:
           name: Build and Deploy on Private Server
           runs-on:
             - self.hosted
             - linux
-          images:
-            - node:18.19.1
+          image: node:18.19.1
           script:
             - echo "Installing dependencies..."
             - npm install
-
-            - echo "Running tests..."
             - npm run test
-
-            - echo "Building NestJS app..."
             - npm run build
-
-            - echo "Restarting PM2..."
             - pm2 stop nestapp || true
             - pm2 start dist/main.js --name nestapp
             - pm2 save
