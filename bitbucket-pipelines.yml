@@ -2,66 +2,21 @@ pipelines:
   branches:
     master:
       - step:
-          name: Build and Deploy to Private Linux Server
-          image: node:18.19.1
+          name: Deploy on Private Linux Server
+          runs-on:
+            - self.hosted
+            - linux
           script:
             - echo "Installing dependencies..."
             - npm ci
 
-            - echo "Building NestJS app..."apipelines:
-  branches:
-    master:
-      - step:
-          name: Build and Deploy to Private Linux Server
-          image: node:18.19.1
-          script:
-            - echo "Installing dependencies..."
-            - npm ci
-
-            - echo "Building NestJS app..."
+            - echo "Building app..."
             - npm run build
 
-            - echo "Creating build archive..."
-            - tar -czf build.tar.gz dist package.json package-lock.json
+            - echo "Copying build files to server folder..."
+            - cp -r dist/* /var/www/server/dist/
 
-            - echo "Uploading build to server..."
-            - scp -o StrictHostKeyChecking=no build.tar.gz azureuser@10.0.0.4:/var/www/server/
-
-            - echo "Extracting build on server..."
-            - ssh -o StrictHostKeyChecking=no azureuser@10.0.0.4 '
-                cd /var/www/server &&
-                tar -xzf build.tar.gz &&
-                rm build.tar.gz
-              '
-
-            - echo "Installing dependencies on server..."
-            - ssh -o StrictHostKeyChecking=no azureuser@10.0.0.4 '
-                cd /var/www/server &&
-                npm ci
-              '
-
-            - echo "Reloading PM2 application..."
-            - ssh -o StrictHostKeyChecking=no azureuser@10.0.0.4 "
-                pm2 reload server || pm2 start dist/main.js --name server
-              "
-
-            - echo "Deployment completed successfully."
-
-            - npm run build
-
-            - echo "Compressing build..."
-            - tar -czf build.tar.gz dist package.json package-lock.json
-
-            - echo "Copying build to server..."
-            - scp -o StrictHostKeyChecking=no build.tar.gz azureuser@10.0.0.4:/var/www/server/
-
-            - echo "Extracting on server..."
-            - ssh -o StrictHostKeyChecking=no azureuser@10.0.0.4 "cd /var/www/server && tar -xzf build.tar.gz"
-
-            - echo "Installing dependencies on server..."
-            - ssh -o StrictHostKeyChecking=no azureuser@10.0.0.4 "cd /var/www/server && npm ci"
-
-            - echo "Restarting PM2 app on server..."
-            - ssh -o StrictHostKeyChecking=no azureuser@10.0.0.4 "pm2 reload server"
+            - echo "Restarting PM2..."
+            - pm2 reload server || pm2 start /var/www/server/dist/main.js --name server
 
             - echo "Deployment complete."
