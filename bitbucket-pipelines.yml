@@ -32,8 +32,8 @@ pipelines:
                 ${DEPLOY_USER}@${DEPLOY_HOST}:~/${REMOTE_DIR:-app_deploy}/release.tar.gz
 
             - echo "Extracting & restarting app on remote server..."
-            - >
-              ssh -p ${DEPLOY_PORT:-22} -i ~/.ssh/deploy_key ${DEPLOY_USER}@${DEPLOY_HOST} 'bash -s' << 'REMOTE_COMMANDS'
+            - |
+              ssh -p ${DEPLOY_PORT:-22} -i ~/.ssh/deploy_key ${DEPLOY_USER}@${DEPLOY_HOST} "bash -s" << 'REMOTE_COMMANDS'
                 set -e
                 mkdir -p ${REMOTE_DIR:-app_deploy}/current
                 tar -xzf ${REMOTE_DIR:-app_deploy}/release.tar.gz -C ${REMOTE_DIR:-app_deploy}/current --strip-components=0
