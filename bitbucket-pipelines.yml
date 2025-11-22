@@ -29,11 +29,11 @@ pipelines:
 
             - echo "Copying release to remote server..."
             - scp -P ${DEPLOY_PORT:-22} -i ~/.ssh/deploy_key deploy/release.tar.gz \
-                ${DEPLOY_USER}@${DEPLOY_HOST}:~/${REMOTE_DIR:-app_deploy}/release.tar.gz
+                ${azureuser}@${10.0.0.4}:~/${REMOTE_DIR:-app_deploy}/release.tar.gz
 
             - echo "Extracting & restarting app on remote server..."
             - |
-              ssh -p ${DEPLOY_PORT:-22} -i ~/.ssh/deploy_key ${DEPLOY_USER}@${DEPLOY_HOST} bash << EOF
+              ssh -p ${DEPLOY_PORT:-22} -i ~/.ssh/deploy_key ${azureuser}@${10.0.0.4} bash << EOF
               set -e
               mkdir -p ${REMOTE_DIR:-app_deploy}/current
               tar -xzf ${REMOTE_DIR:-app_deploy}/release.tar.gz -C ${REMOTE_DIR:-app_deploy}/current --strip-components=0
