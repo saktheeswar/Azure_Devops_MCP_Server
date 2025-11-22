@@ -1,98 +1,288 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 Azure DevOps MCP Server
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A custom **Model Context Protocol (MCP)** server built with **NestJS**, enabling AI agents (like Claude Desktop) to securely query **Azure DevOps** data such as work items, projects, and ticket statistics.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 📌 Overview
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This project exposes Azure DevOps data through a standards-based **MCP server**, allowing any MCP-compatible AI agent to perform real-time queries such as:
 
-## Project setup
+* 🔍 List all projects in the organization
+* 📝 Get count of created / active / closed work items
+* 🧩 Fetch ticket details
+* 📊 Query backlog items or sprints
+* 🏗️ Extend Azure DevOps automation through AI
 
-```bash
-$ npm install
+It supports **two modes**:
+
+### 1️⃣ STDIO MCP Server
+
+Used by Claude Desktop and MCP Inspector locally.
+
+### 2️⃣ HTTP MCP Server
+
+Allows remote access using MCP-over-HTTP.
+
+---
+
+## 🏗️ Architecture
+
+```
+NestJS Application
+│
+├── MCP Module
+│   ├── Tool Definitions
+│   ├── STDIO Transport
+│   └── HTTP Transport
+│
+├── Azure DevOps Service
+│   └── Work Item API
+│   └── Project API
+│
+└── Utilities
+    ├── MCP Message Handlers
+    └── Logger
 ```
 
-## Compile and run the project
+---
+
+## ✨ Features
+
+### ✔️ Custom Tools for Azure DevOps
+
+Tools exposed to MCP clients:
+
+| Tool Name          | Description                                        |
+| ------------------ | -------------------------------------------------- |
+| `list_projects`    | Returns all Azure DevOps projects                  |
+| `count_tickets`    | Returns summary of created/active/resolved tickets |
+| `get_workitem`     | Fetch details of a single work item                |
+| `search_workitems` | Query work items based on filters                  |
+
+---
+
+### ✔️ Full STDIO Transport Support
+
+This allows running the server locally through Claude Desktop.
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+node dist/main.js
 ```
 
-## Run tests
+Claude Desktop config uses:
+
+```json
+{
+  "mcpServers": {
+    "azure-devops-mcp": {
+      "command": "node",
+      "args": ["C://path//to//dist/main.js"]
+    }
+  }
+}
+```
+
+---
+
+### ✔️ HTTP MCP Support
+
+Start server:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:prod
 ```
 
-## Deployment
+You can POST MCP-style requests:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```http
+POST http://localhost:3000/mcp
+```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
+
+## 🔧 Installation
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+git clone <your-repo-url>
+cd azure-devops-mcp
+npm install
+npm run build
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 🔑 Environment Variables
 
-Check out a few resources that may come in handy when working with NestJS:
+Create `.env`:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```
+AZURE_DEVOPS_ORG=your-org
+AZURE_DEVOPS_PAT=your-personal-access-token
+AZURE_DEVOPS_PROJECT=your-default-project
+```
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## ▶️ Running the Server
 
-## Stay in touch
+### Run in STDIO mode (Claude Desktop)
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+node dist/main.js
+```
 
-## License
+### Run in HTTP mode
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```bash
+npm run start:prod
+```
+
+---
+
+## 🧪 Testing with MCP Inspector
+
+(You will explain this with screenshots in your blog.)
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+Then connect using STDIO:
+
+```
+node dist/main.js
+```
+
+---
+
+## 💻 Code Walkthrough
+
+### 📁 MCP Server Setup
+
+```ts
+const server = new Server({
+  name: "azure-devops-mcp",
+  version: "1.0.0",
+  tools: {
+    list_projects: { ... },
+    count_tickets: { ... }
+  }
+});
+```
+
+---
+
+### 📁 Azure DevOps API Integration
+
+```ts
+async getProjects() {
+  const url = `${this.baseUrl}/projects?api-version=7.0`;
+  return this.http.get(url, this.headers);
+}
+```
+
+---
+
+### 📁 STDIO Bootstrap
+
+```ts
+bootstrapStdio(server);
+```
+
+---
+
+### 📁 HTTP Controller
+
+```ts
+@Post('/mcp')
+handleMcp(@Body() body) {
+  return this.mcpHttpService.process(body);
+}
+```
+
+---
+
+## 📚 Example MCP Tool Call
+
+```json
+{
+  "method": "tools/list_projects",
+  "params": {}
+}
+```
+
+Response:
+
+```json
+{
+  "projects": [
+    { "name": "Frontend" },
+    { "name": "Backend" },
+    { "name": "Infrastructure" }
+  ]
+}
+```
+
+---
+
+## 🧩 Use Cases
+
+### For Developers
+
+* Query Azure DevOps without opening the UI
+* Get ticket summaries instantly
+* Automate repetitive DevOps activities
+
+### For AI Assistants
+
+* Smart sprint planning
+* Ticket prioritization
+* Automated status reporting
+
+### For Teams
+
+* Faster decision making
+* AI-powered insights
+
+---
+
+## 🔥 Future Enhancements
+
+* Create/Update work items using AI
+* Integration with Release Pipelines
+* Sprint burndown insights
+* PR and Repository analytics
+
+---
+
+## 📎 Screenshots (Add your own)
+
+* Claude Desktop working
+* MCP Inspector connected
+* Tool response logs
+
+---
+
+## 🧑‍💻 Author
+
+**Saktheeswaran M**
+Software Engineer
+AI Engineer & Full-Stack Developer 
+---
+
+## 🔗 Source Code
+
+👉 **GitHub Repository:**
+***Add your repo link here***
+
+---
+
+If you want, I can also generate:
+
+✅ Blog article
+✅ Screenshots captions
+✅ Architecture diagram (ASCII / Mermaid)
+✅ Video script
+
+Just tell me!
