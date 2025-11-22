@@ -33,25 +33,25 @@ pipelines:
 
             - echo "Extracting & restarting app on remote server..."
             - |
-              ssh -p ${DEPLOY_PORT:-22} -i ~/.ssh/deploy_key ${DEPLOY_USER}@${DEPLOY_HOST} "bash -s" << 'REMOTE_COMMANDS'
-                set -e
-                mkdir -p ${REMOTE_DIR:-app_deploy}/current
-                tar -xzf ${REMOTE_DIR:-app_deploy}/release.tar.gz -C ${REMOTE_DIR:-app_deploy}/current --strip-components=0
-                cd ${REMOTE_DIR:-app_deploy}/current
+              ssh -p ${DEPLOY_PORT:-22} -i ~/.ssh/deploy_key ${DEPLOY_USER}@${DEPLOY_HOST} bash << EOF
+              set -e
+              mkdir -p ${REMOTE_DIR:-app_deploy}/current
+              tar -xzf ${REMOTE_DIR:-app_deploy}/release.tar.gz -C ${REMOTE_DIR:-app_deploy}/current --strip-components=0
+              cd ${REMOTE_DIR:-app_deploy}/current
 
-                echo "Installing production dependencies..."
-                npm install --only=production
+              echo "Installing production dependencies..."
+              npm install --only=production
 
-                if ! command -v pm2 >/dev/null 2>&1; then
-                  echo "Installing pm2..."
-                  npm install -g pm2
-                fi
+              if ! command -v pm2 >/dev/null 2>&1; then
+                echo "Installing pm2..."
+                npm install -g pm2
+              fi
 
-                echo "Restarting application with PM2..."
-                pm2 stop nestapp || true
-                pm2 start dist/main.js --name nestapp || pm2 start npm --name nestapp -- start
-                pm2 save
-REMOTE_COMMANDS
+              echo "Restarting application..."
+              pm2 stop nestapp || true
+              pm2 start dist/main.js --name nestapp || pm2 start npm --name nestapp -- start
+              pm2 save
+              EOF
 
             - echo "Cleaning up SSH key..."
             - rm -f ~/.ssh/deploy_key
