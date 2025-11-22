@@ -3,9 +3,6 @@ pipelines:
     master:
       - step:
           name: Build and Deploy on Private Server
-          runs-on:
-            - self.hosted
-            - linux
           image: node:18.19.1
           script:
             - echo "Installing dependencies..."
@@ -17,10 +14,44 @@ pipelines:
             - echo "Building NestJS app..."
             - npm run build
 
-            - echo "Installing PM2..."
-            - npm install -g pm2
+            - echo "Packaging build for deploy..."
+            - mkdir -p deploy
+            - tar -czf deploy/release.tar.gz dist package.json package-lock.json ecosystem.config.js || \
+              tar -czf deploy/release.tar.gz dist package.json || true
 
-            - echo "Restarting PM2 app..."
-            - pm2 stop nestapp || true
-            - pm2 start dist/main.js --name nestapp
-            - pm2 save
+            - echo "Preparing SSH key..."
+            - mkdir -p ~/.ssh
+            - echo "$SSH_KEY" > ~/.ssh/deploy_key
+            - chmod 600 ~/.ssh/deploy_key
+
+            - echo "Adding remote host to known_hosts..."
+            - ssh-keyscan -p ${DEPLOY_PORT:-22} $DEPLOY_HOST >> ~/.ssh/known_hosts 2>/dev/null || true
+
+            - echo "Copying release to remote server..."
+            - scp -P ${DEPLOY_PORT:-22} -i ~/.ssh/deploy_key deploy/release.tar.gz \
+                ${DEPLOY_USER}@${DEPLOY_HOST}:~/${REMOTE_DIR:-app_deploy}/release.tar.gz
+
+            - echo "Extracting & restarting app on remote server..."
+            - >
+              ssh -p ${DEPLOY_PORT:-22} -i ~/.ssh/deploy_key ${DEPLOY_USER}@${DEPLOY_HOST} 'bash -s' << 'REMOTE_COMMANDS'
+                set -e
+                mkdir -p ${REMOTE_DIR:-app_deploy}/current
+                tar -xzf ${REMOTE_DIR:-app_deploy}/release.tar.gz -C ${REMOTE_DIR:-app_deploy}/current --strip-components=0
+                cd ${REMOTE_DIR:-app_deploy}/current
+
+                echo "Installing production dependencies..."
+                npm install --only=production
+
+                if ! command -v pm2 >/dev/null 2>&1; then
+                  echo "Installing pm2..."
+                  npm install -g pm2
+                fi
+
+                echo "Restarting application with PM2..."
+                pm2 stop nestapp || true
+                pm2 start dist/main.js --name nestapp || pm2 start npm --name nestapp -- start
+                pm2 save
+REMOTE_COMMANDS
+
+            - echo "Cleaning up SSH key..."
+            - rm -f ~/.ssh/deploy_key
