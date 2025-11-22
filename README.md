@@ -18,7 +18,7 @@ It supports **two modes**:
 
 ### 1️⃣ STDIO MCP Server
 
-Used by Claude Desktop and MCP Inspector locally.
+Tested locally using the MCP Inspector (not using a direct Claude Desktop STDIO client).
 
 ### 2️⃣ HTTP MCP Server
 
@@ -62,26 +62,23 @@ Tools exposed to MCP clients:
 
 ---
 
-### ✔️ Full STDIO Transport Support
+### ✔️ STDIO Transport (MCP Inspector)
 
-This allows running the server locally through Claude Desktop.
+This project was tested locally using the MCP Inspector, which acts as an MCP client that connects over STDIO to your server.
+
+Run the server so the inspector can connect over STDIO:
 
 ```bash
 node dist/main.js
 ```
 
-Claude Desktop config uses:
+Start the inspector with:
 
-```json
-{
-  "mcpServers": {
-    "azure-devops-mcp": {
-      "command": "node",
-      "args": ["C://path//to//dist/main.js"]
-    }
-  }
-}
+```bash
+npx @modelcontextprotocol/inspector
 ```
+
+When prompted in the inspector, choose the STDIO connection and point it at the running process (the inspector will spawn or attach to the process as configured).
 
 ---
 
@@ -104,7 +101,7 @@ POST http://localhost:3000/mcp
 ## 🔧 Installation
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/saktheeswar/Azure_Devops_MCP_Server.git
 cd azure-devops-mcp
 npm install
 npm run build
@@ -117,16 +114,16 @@ npm run build
 Create `.env`:
 
 ```
-AZURE_DEVOPS_ORG=your-org
-AZURE_DEVOPS_PAT=your-personal-access-token
-AZURE_DEVOPS_PROJECT=your-default-project
+BASE_URL=url
+AUSER_NAME=your-personal-access-token
+ADO_PAT=your-default-project
 ```
 
 ---
 
 ## ▶️ Running the Server
 
-### Run in STDIO mode (Claude Desktop)
+### Run in STDIO mode (for MCP Inspector)
 
 ```bash
 node dist/main.js
@@ -267,22 +264,11 @@ Response:
 ## 🧑‍💻 Author
 
 **Saktheeswaran M**
-Software Engineer
 AI Engineer & Full-Stack Developer 
 ---
 
 ## 🔗 Source Code
 
 👉 **GitHub Repository:**
-***Add your repo link here***
+(https://github.com/saktheeswar/Azure_Devops_MCP_Server)
 
----
-
-If you want, I can also generate:
-
-✅ Blog article
-✅ Screenshots captions
-✅ Architecture diagram (ASCII / Mermaid)
-✅ Video script
-
-Just tell me!
